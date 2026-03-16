@@ -25,6 +25,8 @@ function OccurrenceCard({ item }) {
     ['Termo Pesquisado', item.search_term],
     ['Processo', item.process],
     ['Dígito de Referência', item.reference_digit],
+    ['Natureza da Ação', item.nature_action],
+    ['Entidade/Advogado identificado', item.identified_entities],
   ]
 
   return (

@@ -22,6 +22,8 @@ class ProcessItem(BaseModel):
     process: str
     responsible: str
     reference_digit: str
+    nature_action: str = "Recuperação de crédito"
+    identified_entities: Optional[str] = ""
 
     # Metadados da ocorrência
     client_name: Optional[str] = ""
@@ -239,6 +241,8 @@ async def export_excel():
                 "Processo": item.get("process"),
                 "Responsável": item.get("responsible"),
                 "Dígito de Referência": item.get("reference_digit"),
+                "Natureza da Ação": item.get("nature_action"),
+                "Entidade/Advogado identificado": item.get("identified_entities"),
                 "UF": item.get("uf"),
                 "Diário/Tribunal": item.get("diary"),
                 "Sigla": item.get("sigla"),

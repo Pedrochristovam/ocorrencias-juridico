@@ -2,6 +2,7 @@ from typing import List, Dict, Tuple
 import json
 import time
 from pathlib import Path
+import re
 
 
 RESPONSIBLE_MAP = {
@@ -34,6 +35,26 @@ def _agent_log(hypothesis_id: str, location: str, message: str, data=None, run_i
 
 
 # #endregion
+
+
+ENTITIES_PATTERNS = [
+    ("MGI - Minas Gerais Participações S.A.", r"\bMGI\b|\bMinas\s+Gerais\s+Participa"),
+    ("EMIP - Empresa Mineira de Parcerias S.A.", r"\bEMIP\b|\bEmpresa\s+Mineira\s+de\s+Parcerias"),
+    ("BEMGE - Banco do Estado de Minas Gerais", r"\bBEMGE\b|\bBanco\s+do\s+Estado\s+de\s+Minas\s+Gerais"),
+    ("CREDIREAL - Banco de Crédito Real de Minas Gerais", r"\bCREDIREAL\b|\bBanco\s+de\s+Cr[eé]dito\s+Real"),
+    ("Joel Britto Vilella – OAB/MG 10.082-N", r"Joel\s+Br[íi]tto?\s+Vilella|\b10\.?082\b"),
+    ("Antonio Valladares Bahia Neto – OAB/MG 82.512-N", r"Antonio\s+Valladares\s+Bahia\s+Neto|\b82\.?512\b"),
+    ("Leonora Maria Aparecida – OAB/MG 62.794-N", r"Leonora\s+Maria\s+Aparecida|\b62\.?794\b"),
+]
+
+
+def _detect_entities(text: str) -> List[str]:
+    found = []
+    lowered = text.lower()
+    for label, pattern in ENTITIES_PATTERNS:
+        if re.search(pattern, lowered, re.IGNORECASE):
+            found.append(label)
+    return found
 
 
 def _get_reference_digit(process_number: str) -> str:
@@ -120,12 +141,16 @@ def distribute_occurrences(occurrences: List[Dict]) -> Tuple[List[Dict], str]:
 
         ref_digit = _get_reference_digit(main_process)
         responsible = _get_responsible_by_digit(ref_digit)
+        detected = _detect_entities(full_text or "")
+        detected_str = ", ".join(detected)
 
         item: Dict = {
             "occurrence": occurrence_number,
             "process": main_process,
             "responsible": responsible,
             "reference_digit": ref_digit,
+            "nature_action": "Recuperação de crédito",
+            "identified_entities": detected_str,
             "uf": uf,
             "diary": diary,
             "sigla": sigla,
@@ -166,6 +191,10 @@ def distribute_occurrences(occurrences: List[Dict]) -> Tuple[List[Dict], str]:
         if main_process:
             lines_for_report.append(f"Processo principal para distribuição: {main_process}")
             lines_for_report.append("")
+        lines_for_report.append("Natureza da ação: Recuperação de crédito")
+        if detected_str:
+            lines_for_report.append(f"Entidade/Advogado identificado: {detected_str}")
+        lines_for_report.append("")
 
         if full_text:
             lines_for_report.append("Inteiro teor da publicação:")
