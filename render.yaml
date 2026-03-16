@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: distribuidor-backend
+    env: python
+    plan: free
+    buildCommand: "cd backend && pip install -r ../requirements.txt"
+    startCommand: "cd backend && uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+  - type: static
+    name: distribuidor-frontend
+    env: node
+    buildCommand: "cd frontend-react && npm install && npm run build"
+    staticPublishPath: "frontend-react/dist"
+    envVars:
+      - key: VITE_API_BASE
+        value: ""  # preencha com a URL pública do backend (ex.: https://distribuidor-backend.onrender.com)
